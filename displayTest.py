@@ -44,7 +44,7 @@ if theme['leftImg'] != 'none':
     leftLogo.config(image=leftImg)
 
 if theme['rightImg'] != 'none':
-    rightImgPath = "revologo.jpg"
+    rightImgPath = os.getcwd()+"/logos/"+theme['rightImg']+".png"
     rightImg0 = Image.open(rightImgPath)
     [rimageSizeWidth, rimageSizeHeight] = rightImg0.size
     rightRatio = (rootHeight*0.25)/rimageSizeHeight
