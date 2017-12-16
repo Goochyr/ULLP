@@ -23,15 +23,20 @@ verses = {}
 currVerseNum = 0
 currVerse = ""
 currSlide = 0
+currSlideNum = 0
 order = []
 orderMode = True
 currSong = 0
 blanked = False
+live=True
 
 UI = Tk()
 root = Toplevel()
 rootHeight = root.winfo_screenheight()
 rootWidth = root.winfo_screenwidth()
+
+def newSong():
+    os.system("python3 songconverter.py")
 
 textFrame = Frame(root, width=rootWidth, height=rootHeight*0.75, background='black')
 mainText = Text(textFrame, background=theme['bgColour'], borderwidth=0, highlightthickness=0)
@@ -40,11 +45,13 @@ leftLogo = Label(logoBox, border=0, background='black')
 rightLogo = Label(logoBox, border=0, background='black')
 
 toolbar = Frame(UI, width=rootWidth, height=20)
-toolbar.pack(side=TOP, fill=X)
+toolbar.pack(side=TOP, fill=X, padx=5, pady=3)
+newSongButton=Button(toolbar, text="New Song", command=newSong)
+newSongButton.pack(side=LEFT)
 versionLabel = Label(toolbar, text="Version: a0.0")
 versionLabel.pack(side=LEFT)
 mainFrame = Frame(UI, width=rootWidth, height=rootHeight-20)
-mainFrame.pack(side=TOP, fill=BOTH, expand=True)
+mainFrame.pack(side=TOP, fill=BOTH, expand=True, padx=10, pady=10)
 Label1 = Label(mainFrame, text="Library:")
 Label1.grid(row=0, column=0)
 Label2 = Label(mainFrame, text="Setlist:")
@@ -54,13 +61,13 @@ Label3.grid(row=0, column=2)
 Label4 = Label(mainFrame, text="Details:")
 Label4.grid(row=0, column=3)
 libraryList = Listbox(mainFrame)
-libraryList.grid(row=1, column=0, rowspan=3, sticky=N+E+S+W)
+libraryList.grid(row=1, column=0, rowspan=4, sticky=N+E+S+W, padx=5)
 setList = Listbox(mainFrame)
-setList.grid(row=1, column=1, rowspan=3, sticky=N+E+S+W)
+setList.grid(row=1, column=1, rowspan=4, sticky=N+E+S+W, padx=5)
 slideList = Listbox(mainFrame)
-slideList.grid(row=1, column=2, rowspan=3, sticky=N+E+S+W)
+slideList.grid(row=1, column=2, rowspan=4, sticky=N+E+S+W, padx=5)
 detailFrame = Frame(mainFrame)
-detailFrame.grid(row=1, column=3)
+detailFrame.grid(row=1, column=3, sticky=N)
 themeLabel = Label(detailFrame, text="Theme:")
 themeLabel.grid(row=0, column=0)
 themeLabel1 = Label(detailFrame, text=themeName)
@@ -82,7 +89,7 @@ currSlideLabel.grid(row=4, column=0)
 currSlideLabel1 = Label(detailFrame)
 currSlideLabel1.grid(row=4, column=1)
 previewLabel = Label(mainFrame, text="Preview:")
-previewLabel.grid(row=2, column=3)
+previewLabel.grid(row=2, column=3, sticky=S)
 previewFrame = Frame(mainFrame, bg=theme['bgColour'], width=rootWidth*0.1, height=rootHeight*0.2)
 previewFrame.grid(row=3, column=3)
 previewFrame.pack_propagate(0)
@@ -100,6 +107,8 @@ mainFrame.columnconfigure(0, weight=1)
 mainFrame.columnconfigure(1, weight=1)
 mainFrame.columnconfigure(2, weight=1)
 mainFrame.columnconfigure(3, weight=1)
+mainFrame.rowconfigure(1, weight=1)
+mainFrame.rowconfigure(2, weight=1)
 
 for i in range(len(allsongs)):
     libraryList.insert(END, allsongs[i][:-5])
@@ -153,6 +162,7 @@ def nextSlide(a):
         updateSlide()
     else:
         blankSlide(a)
+    highlightEntry()
 
 def prevSlide(a):
     global currSlide, currVerse, currVerseNum, orderMode
@@ -166,21 +176,23 @@ def prevSlide(a):
         updateSlide()
     else:
         blankSlide(a)
+    highlightEntry()
 
 def updateSlide():
-    mainText.delete('1.0', END)
-    mainText.insert(END, verses[currVerse][currSlide], 'main')
-    previewText.delete('1.0', END)
-    previewText.insert(END, verses[currVerse][currSlide], 'main')
-    currSongLabel1.config(text=songlist[currSong])
-    currVerseLabel1.config(text=currVerse)
-    currSlideLabel1.config(text=currSlide+1)
+    if blanked==False:
+        mainText.delete('1.0', END)
+        mainText.insert(END, verses[currVerse][currSlide], 'main')
+        previewText.delete('1.0', END)
+        previewText.insert(END, verses[currVerse][currSlide], 'main')
+        currSongLabel1.config(text=songlist[currSong])
+        currVerseLabel1.config(text=currVerse)
+        currSlideLabel1.config(text=currSlide+1)
 
 def blankSlide(a):
     global blanked
     if blanked:
-        updateSlide()
         blanked=False
+        updateSlide()
     else:
         mainText.delete('1.0', END)
         previewText.delete('1.0', END)
@@ -193,6 +205,7 @@ def restartSong(a):
     currSlide = 0
     orderMode = True
     updateSlide()
+    highlightEntry()
 
 def nextSong(a):
     global currSong, songlist, song
@@ -225,7 +238,45 @@ def updateSong():
     currVerseNum = 0
     currVerse = order[currVerseNum]
     currSlide = 0
+    slideList.delete(0, END)
+    for a in range(len(order)):
+        for b in range(len(verses[order[a]])):
+            slideList.insert(END, order[a]+" "+str(b+1)+" "+verses[order[a]][b])
+    highlightEntry()
     updateSlide()
+
+def highlightEntry():
+    global currVerse, currSlide, order, currVerseNum, songlist, currSong
+    allSlides = slideList.get(0,END)
+    numTimes = 0
+    for a in range(0,currVerseNum+1):
+        if order[a] == currVerse:
+            numTimes += 1
+    counter = 1
+    for a in range(len(allSlides)):
+        if allSlides[a][0:2] == currVerse and int(allSlides[a][3])-1 == currSlide:
+            if counter == numTimes:
+                slideList.itemconfig(a, bg='green')
+                counter += 1
+            else:
+                counter += 1
+        else:
+            slideList.itemconfig(a, bg='white')
+    for a in range(len(songlist)):
+        if a == currSong:
+            setList.itemconfig(a, bg='green')
+        else:
+            setList.itemconfig(a, bg='white')
+
+def noliveMode(a):
+    global live
+    live=False
+    previewIndicator.config(text="Not Live", background='red')
+
+def liveMode(a):
+    global live
+    live=True
+    previewIndicator.config(text="Live", background='green')
 
 updateSong()
 root.config(bg=theme['bgColour'])
@@ -238,6 +289,8 @@ UI.bind("<Down>", nextSong)
 UI.bind("<Up>", prevSong)
 UI.bind("r", restartSong)
 UI.bind("t", blankSlide)
+UI.bind("<Escape>", noliveMode)
+UI.bind("l", liveMode)
 restartSong(0)
 textFrame.pack(expand=True, fill='both', side=TOP)
 mainText.pack(expand=True, fill='both')
