@@ -4,6 +4,7 @@ from tkinter import Frame, Label, Listbox, Button, TOP, LEFT, RIGHT, BOTTOM, X, 
 import modules.screenControl as sC
 import modules.displaySong as dS
 import modules.keypressHandlers as kH
+import modules.setlistHandler as sH
 import os
 
 mode = "live"
