@@ -32,6 +32,7 @@ live=True
 
 UI = Tk()
 root = Toplevel()
+UI.winfo_toplevel().title("ULLP")
 rootHeight = root.winfo_screenheight()
 rootWidth = root.winfo_screenwidth()
 
@@ -61,11 +62,11 @@ Label3.grid(row=0, column=2)
 Label4 = Label(mainFrame, text="Details:")
 Label4.grid(row=0, column=3)
 libraryList = Listbox(mainFrame)
-libraryList.grid(row=1, column=0, rowspan=4, sticky=N+E+S+W, padx=5)
+libraryList.grid(row=1, column=0, rowspan=3, sticky=N+E+S+W, padx=5)
 setList = Listbox(mainFrame)
-setList.grid(row=1, column=1, rowspan=4, sticky=N+E+S+W, padx=5)
+setList.grid(row=1, column=1, rowspan=3, sticky=N+E+S+W, padx=5)
 slideList = Listbox(mainFrame)
-slideList.grid(row=1, column=2, rowspan=4, sticky=N+E+S+W, padx=5)
+slideList.grid(row=1, column=2, rowspan=3, sticky=N+E+S+W, padx=5)
 detailFrame = Frame(mainFrame)
 detailFrame.grid(row=1, column=3, sticky=N)
 themeLabel = Label(detailFrame, text="Theme:")
@@ -90,7 +91,7 @@ currSlideLabel1 = Label(detailFrame)
 currSlideLabel1.grid(row=4, column=1)
 previewLabel = Label(mainFrame, text="Preview:")
 previewLabel.grid(row=2, column=3, sticky=S)
-previewFrame = Frame(mainFrame, bg=theme['bgColour'], width=rootWidth*0.1, height=rootHeight*0.2)
+previewFrame = Frame(mainFrame, bg=theme['bgColour'], width=rootWidth*0.2, height=rootHeight*0.2)
 previewFrame.grid(row=3, column=3)
 previewFrame.pack_propagate(0)
 previewTextFrame = Frame(previewFrame, bg=theme['bgColour'], width=rootWidth*0.1, height=rootHeight*0.15)
@@ -101,11 +102,11 @@ previewText.pack(side=TOP, expand=False, fill=X)
 previewLogoBox = Frame(previewFrame, width=rootWidth*0.2, height=rootHeight*0.05, background=theme['bgColour'])
 previewleftLogo = Label(previewLogoBox, border=0, background=theme['bgColour'])
 previewrightLogo = Label(previewLogoBox, border=0, background=theme['bgColour'])
-previewIndicator = Label(mainFrame, width=20, height=1, text='Live', background='green')
+previewIndicator = Label(mainFrame, width=20, height=1, text='Live Mode', background='green')
 previewIndicator.grid(row=4, column=3)
 mainFrame.columnconfigure(0, weight=1)
 mainFrame.columnconfigure(1, weight=1)
-mainFrame.columnconfigure(2, weight=1)
+mainFrame.columnconfigure(2, weight=2)
 mainFrame.columnconfigure(3, weight=1)
 mainFrame.rowconfigure(1, weight=1)
 mainFrame.rowconfigure(2, weight=1)
@@ -149,6 +150,7 @@ def setVerse(char):
         currSlide = 0
         orderMode = False
         updateSlide()
+        highlightEntry()
 
 def nextSlide(a):
     global currSlide, currVerse, currVerseNum, orderMode
@@ -226,9 +228,10 @@ def prevSong(a):
         blankSlide(a)
 
 def updateSong():
-    global song, verses, order, currVerseNum, currVerse, currSlide
+    global song, verses, order, orderMode, currVerseNum, currVerse, currSlide
     verses = {}
     order = []
+    orderMode = True
     for a in range(len(song["lyrics"])):
         verses[song["lyrics"][a]["id"]] = []
         for b in range(len(song["lyrics"][a]["slides"])):
@@ -246,22 +249,30 @@ def updateSong():
     updateSlide()
 
 def highlightEntry():
-    global currVerse, currSlide, order, currVerseNum, songlist, currSong
+    global currVerse, currSlide, order, orderMode, currVerseNum, songlist, currSong
     allSlides = slideList.get(0,END)
-    numTimes = 0
-    for a in range(0,currVerseNum+1):
-        if order[a] == currVerse:
-            numTimes += 1
-    counter = 1
-    for a in range(len(allSlides)):
-        if allSlides[a][0:2] == currVerse and int(allSlides[a][3])-1 == currSlide:
-            if counter == numTimes:
-                slideList.itemconfig(a, bg='green')
-                counter += 1
+    if orderMode:
+        numTimes = 0
+        for a in range(0,currVerseNum+1):
+            if order[a] == currVerse:
+                numTimes += 1
+        counter = 1
+        for a in range(len(allSlides)):
+            if allSlides[a][0:2] == currVerse and int(allSlides[a][3])-1 == currSlide:
+                if counter == numTimes:
+                    slideList.itemconfig(a, bg='green')
+                    counter += 1
+                else:
+                    counter += 1
             else:
-                counter += 1
-        else:
-            slideList.itemconfig(a, bg='white')
+                slideList.itemconfig(a, bg='white')
+    else:
+        for a in range(len(allSlides)):
+            if allSlides[a][0:2] == currVerse and int(allSlides[a][3])-1 == currSlide:
+                slideList.itemconfig(a, bg='green')
+            else:
+                slideList.itemconfig(a, bg='white')
+            
     for a in range(len(songlist)):
         if a == currSong:
             setList.itemconfig(a, bg='green')
@@ -271,16 +282,16 @@ def highlightEntry():
 def noliveMode(a):
     global live
     live=False
-    previewIndicator.config(text="Not Live", background='red')
+    previewIndicator.config(text="Normal Mode", background='red')
 
 def liveMode(a):
     global live
     live=True
-    previewIndicator.config(text="Live", background='green')
+    previewIndicator.config(text="Live Mode", background='green')
 
 updateSong()
 root.config(bg=theme['bgColour'])
-mainText.tag_configure('main', justify='center', background=theme['bgColour'], foreground=theme['fgColour'], font=(theme['font'], theme['fontSize']), wrap='word')
+mainText.tag_configure('main', justify='center', background=theme['bgColour'], foreground=theme['fgColour'], font=(theme['font'], theme['fontSize']), spacing1=30, wrap='word')
 previewText.tag_configure('main', justify='center', background=theme['bgColour'], foreground=theme['fgColour'], font=(theme['font'], int(theme['fontSize']*0.2)), wrap='word')
 UI.bind("<Key>", setVerse)
 UI.bind("<Left>", prevSlide)
@@ -293,7 +304,7 @@ UI.bind("<Escape>", noliveMode)
 UI.bind("l", liveMode)
 restartSong(0)
 textFrame.pack(expand=True, fill='both', side=TOP)
-mainText.pack(expand=True, fill='both')
+mainText.pack(expand=True, fill='both', pady=20)
 logoBox.config(bg=theme['bgColour'])
 logoBox.pack(expand=FALSE, fill=X, side=BOTTOM)
 leftLogo.pack(side=LEFT, fill=Y, expand=FALSE)
