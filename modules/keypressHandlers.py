@@ -5,7 +5,6 @@ import modules.screenControl as sC
 
 def bible(key):
     if bH.typing:
-        print(key.keysym)
         if len(key.keysym) == 1 and key.keysym.isalpha():
             bH.addRef(key.keysym)
         elif len(key.keysym) == 1 and key.keysym.isdigit():

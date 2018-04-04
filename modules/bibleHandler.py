@@ -44,8 +44,8 @@ def getReference():
 
 if __name__ == "__main__":
     path = os.pardir+"/bibles"
-    niv = ElementTree.parse(path+"/NIV.xml")
-    tl = niv.getroot()
+    kjv = ElementTree.parse(path+"/KJV.xml")
+    tl = kjv.getroot()
     getReference()
     translateReference(instr)
     getPassage(book, chapter, verse1, verse2)
@@ -53,8 +53,8 @@ if __name__ == "__main__":
 else:
     import modules.screenControl as sC
     path = os.getcwd()+"/bibles"
-    niv = ElementTree.parse(path+"/NIV.xml")
-    tl = niv.getroot()
+    kjv = ElementTree.parse(path+"/KJV.xml")
+    tl = kjv.getroot()
     currSlide = 0
     currPassage = ""
     blanked = False
