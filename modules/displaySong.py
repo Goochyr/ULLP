@@ -2,7 +2,8 @@
 import yaml
 import json
 import os
-from modules.screenControl import updateText, blankText
+from modules.screenControl import updateText, blankText, toggleBlanked
+import modules.setlistHandler as sH
 
 def init():
     global verses, currVerseNum, currVerse, currSlide, currSlideNum, order, orderMode, currSong, song, songlist, setlistName, blanked
@@ -13,14 +14,8 @@ def init():
     currSlideNum = 0
     order = []
     orderMode = True
-    currSong = 0
     blanked = False
-    with open(os.path.join(os.getcwd(),"config.yml"), 'r') as ymlfile:
-        cfg = yaml.load(ymlfile)
-    setlistName = cfg['setlist']
-    setlist = json.load(open(os.getcwd()+"/setlists/"+setlistName+".json"))
-    songlist = setlist['songs']
-    song = json.load(open(os.getcwd()+"/songs/"+songlist[0]+".json"))
+    song = json.load(open(os.getcwd()+"/songs/"+sH.songlist[0]+".json"))
 
 def updateSong():
     global song, verses, order, orderMode, currVerseNum, currVerse, currSlide
@@ -38,21 +33,10 @@ def updateSong():
     currSlide = 0
 
 def setSlide():
-    global blanked
-    if not blanked:
-        updateText(verses[currVerse][currSlide])
+    updateText(verses[currVerse][currSlide])
 
 def blankSlide():
     blankText()
-
-def toggleBlanked():
-    global blanked
-    if blanked:
-        blanked = False
-        setSlide()
-    else:
-        blanked = True
-        blankSlide()
 
 def nextSlide():
     global currSlide, currVerse, currVerseNum, orderMode
@@ -89,19 +73,19 @@ def restartSong():
     setSlide()
 
 def nextSong():
-    global currSong, songlist, song
-    if currSong < len(songlist)-1:
-        currSong += 1
-        song = json.load(open(os.getcwd()+"/songs/"+songlist[currSong]+".json"))
+    global song
+    if sH.currSong < len(sH.songlist)-1:
+        sH.currSong += 1
+        song = json.load(open(os.getcwd()+"/songs/"+sH.songlist[sH.currSong]+".json"))
         updateSong()
     else:
         toggleBlanked()
 
 def prevSong():
-    global currSong, songlist, song
-    if currSong > 0:
-        currSong -= 1
-        song = json.load(open(os.getcwd()+"/songs/"+songlist[currSong]+".json"))
+    global song
+    if sH.currSong > 0:
+        sH.currSong -= 1
+        song = json.load(open(os.getcwd()+"/songs/"+sH.songlist[sH.currSong]+".json"))
         updateSong()
     else:
         toggleBlanked()
@@ -124,10 +108,12 @@ def updateSong():
 
 def setVerse(char):
     global currVerse, currSlide, orderMode, verses
-    charConvert = {"c": "c1", "v":"v1", "b":"b1", "1":"v1", "2":"v2", "3":"v3"}
+    charConvert = {"c": "c1", "v":"c2", "b":"b1", "n":"b2", "1":"v1", "2":"v2", "3":"v3"}
     if char.char in charConvert and charConvert[char.char] in verses:
         currVerse = charConvert[char.char]
         currSlide = 0
         orderMode = False
         setSlide()
 
+def goLive():
+    setSlide()

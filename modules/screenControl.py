@@ -6,7 +6,7 @@ from PIL import ImageTk, Image
 
 
 def init():
-    global root, rootWidth, rootHeight, mainText, textFrame, logoBox, leftLogo, rightLogo, theme, order, verses
+    global root, rootWidth, rootHeight, mainText, textFrame, logoBox, leftLogo, rightLogo, theme, order, textStore, blanked 
     root = tk.Tk()
     rootHeight = root.winfo_screenheight()
     rootWidth = root.winfo_screenwidth()
@@ -17,6 +17,8 @@ def init():
     leftLogo = tk.Label(logoBox, border=0, background='black')
     rightLogo = tk.Label(logoBox, border=0, background='black')
     textFrame.pack(expand=True, fill='both', side=tk.TOP)
+    textStore = ""
+    blanked = False
 
 def getThemeData():
     global mainText, leftLogo, rightLogo, themeName
@@ -53,9 +55,11 @@ def getThemeData():
     rightLogo.pack(side=tk.RIGHT, fill=tk.Y, expand=False)
 
 def updateText(text):
-    global mainText
+    global mainText, textStore, blanked
     mainText.delete('1.0', tk.END)
-    mainText.insert(tk.END, text, 'main')
+    if not blanked:
+        mainText.insert(tk.END, text, 'main')
+    textStore = text
 
 def blankText():
     global mainText
@@ -64,4 +68,17 @@ def blankText():
 def mainLoop():
     global root
     root.mainloop()
+
+def unBlank():
+    global mainText, textStore
+    mainText.insert(tk.END, textStore, 'main')
+
+def toggleBlanked():
+    global blanked
+    if blanked:
+        blanked = False
+        unBlank()
+    else:
+        blanked = True
+        blankText()
 

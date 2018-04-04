@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 import tkinter as tk
-from tkinter import Frame, Label, Listbox, Button, TOP, LEFT, RIGHT, BOTTOM, X, Y, BOTH, N, S, E, W
+from tkinter import Frame, Text, Label, Listbox, Button, TOP, LEFT, RIGHT, BOTTOM, X, Y, BOTH, N, S, E, W
 import modules.screenControl as sC
 import modules.displaySong as dS
 import modules.keypressHandlers as kH
 import modules.setlistHandler as sH
+import modules.bibleHandler as bH
 import os
 
 mode = "live"
 
-dS.init()
 sC.init()
 sC.getThemeData()
 UI = tk.Toplevel()
@@ -43,7 +43,7 @@ themeLabel1 = Label(detailFrame, text=sC.themeName)
 themeLabel1.grid(row=0, column=1)
 setlistLabel = Label(detailFrame, text="Setlist:")
 setlistLabel.grid(row=1, column=0)
-setlistLabel1 = Label(detailFrame, text=dS.setlistName)
+setlistLabel1 = Label(detailFrame)
 setlistLabel1.grid(row=1, column=1)
 currSongLabel = Label(detailFrame, text="Current Song:")
 currSongLabel.grid(row=2, column=0)
@@ -78,6 +78,8 @@ previewLabel.grid(row=2, column=3, sticky=S)
 #previewLogoBox = Frame(previewFrame, width=rootWidth*0.2, height=rootHeight*0.05, background=theme['bgColour'])
 #previewleftLogo = Label(previewLogoBox, border=0, background=theme['bgColour'])
 #previewrightLogo = Label(previewLogoBox, border=0, background=theme['bgColour'])
+searchBar = Text(mainFrame, height=1, width=30)
+searchBar.grid(row=4, column=0, padx=5, columnspan=3, sticky=W+E)
 previewIndicator = Label(mainFrame, width=20, height=1, text='Live Mode', background='green')
 previewIndicator.grid(row=4, column=3)
 mainFrame.columnconfigure(0, weight=1)
@@ -87,51 +89,79 @@ mainFrame.columnconfigure(3, weight=1)
 mainFrame.rowconfigure(1, weight=1)
 mainFrame.rowconfigure(2, weight=1)
 
-allsongs=os.listdir(os.getcwd()+"/songs/")
-allsongs.sort()
-
 def keyPressSend(key):
     global mode
     if key.keysym == "Escape":
         mode = "normal"
+        mainFrame.focus_set()
+        resetHighlight()
+        searchBar.delete("1.0", tk.END)
     elif mode == "live":
         kH.live(key)
         updateLists()
+        highlightSong()
+    elif mode == "bible":
+        kH.bible(key)
+        searchbarUpdate()
+        bibleUpdate()
+        highlightBible()
+    elif mode == "setlist":
+        kH.setlist(key)
+        setlistUpdate()
+        searchbarUpdate()
     elif mode == "normal":
         a = kH.normal(key)
-        if a in ["live", "setlist"]:
-            mode = a
+        if a == "live":
+            mode = "live"
+            updateLists()
+            highlightSong()
+        elif a == "setlist":
+            mode = "setlist"
+        elif a == "bible":
+            mode = "bible"
+            bibleUpdate()
+            highlightBible()
+    if key.keysym == "slash":
+        searchBar.focus_set()
+    elif key.keysym == "Return":
+        mainFrame.focus_set()
+        searchBar.delete("1.0", tk.END)
     updateInfo()
-    highlightEntry()
 
 def updateInfo():
     global mode
-    currSongLabel1.config(text=dS.songlist[dS.currSong])
+    setlistLabel1.config(text=sH.setlistName)
+    if len(sH.songlist) > 0:
+        currSongLabel1.config(text=sH.songlist[sH.currSong])
+    else:
+        currSongLabel1.config(text="Setlist Empty")
     currVerseLabel1.config(text=dS.currVerse)
     currSlideLabel1.config(text=dS.currSlide+1)
     orderModeLabel1.config(text=dS.orderMode)
     blankedLabel1.config(text=dS.blanked)
     if mode == "live":
         previewIndicator.config(text='Live Mode', background='green')
+    elif mode == "bible":
+        previewIndicator.config(text='Bible Mode', background='brown')
     elif mode == "normal":
         previewIndicator.config(text='Normal Mode', background='orange')
     elif mode == "setlist":
+        setlistUpdate()
         previewIndicator.config(text='Setlist Mode', background='cyan')
 
 def updateLists():
-    global allsongs
     slideList.delete(0, tk.END)
     libraryList.delete(0, tk.END)
     setList.delete(0, tk.END)
-    for i in range(len(allsongs)):
-        libraryList.insert(tk.END, allsongs[i][:-5])
-    for i in range(len(dS.songlist)):
-        setList.insert(tk.END, dS.songlist[i])
+    for i in range(len(sH.allsongs)):
+        libraryList.insert(tk.END, sH.allsongs[i][:-5])
+    for i in range(len(sH.songlist)):
+        setList.insert(tk.END, sH.songlist[i])
     for a in range(len(dS.order)):
         for b in range(len(dS.verses[dS.order[a]])):
             slideList.insert(tk.END, dS.order[a]+" "+str(b+1)+" "+dS.verses[dS.order[a]][b])
 
-def highlightEntry():
+def highlightSong():
     allSlides = slideList.get(0,tk.END)
     if dS.orderMode:
         numTimes = 0
@@ -158,16 +188,70 @@ def highlightEntry():
             else:
                 slideList.itemconfig(a, bg='gray70')
             
-    for a in range(len(dS.songlist)):
-        if a == dS.currSong:
+    for a in range(len(sH.songlist)):
+        if a == sH.currSong:
             setList.itemconfig(a, bg='green')
         else:
             setList.itemconfig(a, bg='white')
 
+def highlightBible():
+    allVerses = slideList.get(0, tk.END)
+    for a in range(len(allVerses)):
+        if a == bH.currSlide:
+            slideList.itemconfig(a, bg='brown')
+        else:
+            slideList.itemconfig(a, bg='white')
+
+def setlistUpdate():
+    updateLists()
+    if sH.whichList:
+        for a in range(len(sH.songlist)):
+            if a == sH.setSel:
+                setList.itemconfig(a, bg='cyan')
+            else:
+                setList.itemconfig(a, bg='white')
+
+    else:
+        for a in range(len(sH.allsongs)):
+            if a == sH.libSel:
+                libraryList.itemconfig(a, bg='cyan')
+            else:
+                libraryList.itemconfig(a, bg='white')
+
+def bibleUpdate():
+    slideList.delete(0, tk.END)
+    setList.delete(0, tk.END)
+    for a in bH.passages:
+        setList.insert(tk.END, a)
+    if bH.currPassage != "":
+        for a in bH.passages[bH.currPassage].verses:
+            slideList.insert(tk.END, a)
+
+def resetHighlight():
+    for a in range(slideList.size()):
+        slideList.itemconfig(a, bg='white')
+    for a in range(setList.size()):
+        setList.itemconfig(a, bg='white')
+    for a in range(libraryList.size()):
+        libraryList.itemconfig(a, bg='white')
+
+def searchbarUpdate():
+    global mode
+    searchBar.delete('1.0', tk.END)
+    if mode == "setlist": 
+        searchBar.insert('1.0',sH.searchString)
+    elif mode == "bible":
+        searchBar.insert('1.0',bH.reference)
+
+sH.init()
+sH.fromConfig()
+dS.init()
 dS.updateSong()
 dS.setSlide()
 UI.bind("<Key>", keyPressSend)
+sH.refreshLib()
 updateInfo()
 updateLists()
+highlightSong()
 sC.mainLoop()
 UI.mainloop()
