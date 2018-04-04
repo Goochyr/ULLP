@@ -20,4 +20,4 @@ Lyrics projection software designed for churches, suitable for anyone
 * Much more
 
 ### Bible Verses
-* Created to use [OpenSong's bibles] (http://www.opensong.org/home/download#bibles)
+* Created to use [OpenSong's bibles](http://www.opensong.org/home/download#bibles)
