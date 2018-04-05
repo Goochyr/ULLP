@@ -40,8 +40,6 @@ def getReference():
     global reference
     reference = input("Bible Reference: ")
 
-
-
 if __name__ == "__main__":
     path = os.pardir+"/bibles"
     kjv = ElementTree.parse(path+"/KJV.xml")
@@ -61,6 +59,7 @@ else:
     typing = False
     reference = ""
     currPassageNum = 0
+    bibles = []
 
 def setSlide():
     global passages, currPassage, currSlide
@@ -72,12 +71,18 @@ def nextSlide():
         currSlide +=1
         setSlide()
 
+def setTranslation(transCode):
+    global tl
+    bible = ElementTree.parse(path+"/"+transCode.upper()+".xml")
+    tl = bible.getroot()
+
 def createPassage():
-    global reference, book, chapter, verse1, verse2, currPassage, tl
+    global reference, book, chapter, verse1, verse2, currPassage, currSlide, currPassageNum, passageLookup
     translateReference(reference)
     getPassage(book, chapter, verse1, verse2)
-    currPassage = reference
-   
+    currPassage = passageLookup[currPassageNum]
+    currSlide = 0
+
 def goLive():
     setSlide()
 
@@ -95,15 +100,24 @@ def restartPassage():
 def blankSlide():
     sC.blankText()
 
-def beginRef():
-    global reference, typing
-    reference = ""
-    typing = True
+def nextPassage():
+    global currPassage, currPassageNum, currSlide, passageLookup
+    if currPassageNum < len(passageLookup)-1:
+        currPassageNum += 1
+        currPassage = passageLookup[currPassageNum]
+        currSlide = 0
+        setSlide()
 
-def addRef(char):
-    global reference
-    reference += char
+def prevPassage():
+    global currPassage, currPassageNum, currSlide, passageLookup
+    if currPassageNum > 0:
+        currPassageNum -= 1
+        currPassage = passageLookup[currPassageNum]
+        currSlide = 0
+        setSlide()
 
-def rmRef():
-    global reference
-    reference = reference[:-1]
+def getAvailableBibles():
+    global bibles
+    bibles = os.listdir(os.getcwd()+"/bibles/")
+    for a in range(len(bibles)):
+        bibles[a] = bibles[a][:-4]

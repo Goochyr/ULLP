@@ -93,4 +93,10 @@ def songSearch():
         if searchString in allsongs[a]:
             tempList.append(allsongs[a])
     allsongs = tempList
-    
+
+def saveList(name):
+    global songlist
+    jsonfile = {}
+    jsonfile["songs"]=songlist
+    with open(os.getcwd()+"/setlists/"+name+".json", 'w') as outfile:
+        json.dump(jsonfile, outfile, sort_keys=True, indent=4)

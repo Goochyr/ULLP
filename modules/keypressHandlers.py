@@ -4,86 +4,71 @@ import modules.bibleHandler as bH
 import modules.screenControl as sC
 
 def bible(key):
-    if bH.typing:
-        if len(key.keysym) == 1 and key.keysym.isalpha():
-            bH.addRef(key.keysym)
-        elif len(key.keysym) == 1 and key.keysym.isdigit():
-            bH.addRef(key.keysym)
-        elif key.keysym == "colon":
-            bH.addRef(":")
-        elif key.keysym == "space":
-            bH.addRef(" ")
-        elif key.keysym == "minus":
-            bH.addRef("-")
-        elif key.keysym == "Return":
-            bH.createPassage()
-            bH.typing = False
-        elif key.keysym == "BackSpace":
-            bH.rmRef()
-    else:
-        if key.keysym == "Right" or key.keysym == "l":
-            bH.nextSlide()
-        elif key.keysym == "Left" or key.keysym == "h":
-            bH.prevSlide()
-        elif key.keysym == "t":
-            sC.toggleBlanked()
-        elif key.keysym =="r":
-            bH.restartPassage()
-        elif key.keysym =="Return":
-            bH.goLive()
-        elif key.keysym == "slash":
-            bH.beginRef()
+    if key == "Right" or key == "l":
+        bH.nextSlide()
+    elif key == "Left" or key == "h":
+        bH.prevSlide()
+    elif key == "Down" or key == "j":
+        bH.nextPassage()
+    elif key == "Up" or key == "k":
+        bH.prevPassage()
+    elif key == "t":
+        sC.toggleBlanked()
+    elif key =="r":
+        bH.restartPassage()
+    elif key =="g":
+        bH.goLive()
 
 def live(key):
-    if key.keysym == "Right" or key.keysym == "l":
+    if key == "Right" or key == "l":
         dS.nextSlide()
-    elif key.keysym == "Left" or key.keysym == "h":
+    elif key == "Left" or key == "h":
         dS.prevSlide()
-    elif key.keysym =="r":
+    elif key =="r":
         dS.restartSong()
-    elif key.keysym == "Up" or key.keysym == "k":
+    elif key == "Up" or key == "k":
         dS.prevSong()
-    elif key.keysym == "Down" or key.keysym == "j":
+    elif key == "Down" or key == "j":
         dS.nextSong()
-    elif key.keysym == "t":
+    elif key == "t":
         sC.toggleBlanked()
-    elif key.keysym =="Return":
-        sC.goLive()
-    else:
+    elif key =="g":
+        dS.goLive()
+    elif len(key) == 1:
         dS.setVerse(key)
 
 def normal(key):
-    if key.keysym == "l":
+    if key == "l":
         return "live"
-    elif key.keysym == "s":
+    elif key == "s":
         return "setlist"
-    elif key.keysym == "b":
+    elif key == "b":
         return "bible"
     else:
         return
 
 def setlist(key):
     if sH.searching:
-        if len(key.keysym) == 1 and key.keysym.isalpha():
-            sH.addSearch(key.keysym)
-        elif key.keysym == "Space":
+        if len(key) == 1 and key.isalpha():
+            sH.addSearch(key)
+        elif key == "Space":
             sH.addSearch("Space")
-        elif key.keysym == "Return":
+        elif key == "Return":
             sH.endSearch()
-        elif key.keysym == "BackSpace":
+        elif key == "BackSpace":
             sH.rmSearch()
     else:
-        if key.keysym == "Right" or key.keysym == "l":
+        if key == "Right" or key == "l":
             sH.addSong()
-        elif key.keysym == "Left" or key.keysym == "h":
+        elif key == "Left" or key == "h":
             sH.removeSong()
-        elif key.keysym =="o":
+        elif key =="o":
             sH.switchList()
-        elif key.keysym == "Up" or key.keysym == "k":
+        elif key == "Up" or key == "k":
             sH.prevItem()
-        elif key.keysym == "Down" or key.keysym == "j":
+        elif key == "Down" or key == "j":
             sH.nextItem()
-        elif key.keysym == "slash":
+        elif key == "slash":
             sH.beginSearch()
-        elif key.keysym == "Return":
+        elif key == "Return":
             sH.refreshLib() 

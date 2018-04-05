@@ -108,9 +108,9 @@ def updateSong():
 
 def setVerse(char):
     global currVerse, currSlide, orderMode, verses
-    charConvert = {"c": "c1", "v":"c2", "b":"b1", "n":"b2", "1":"v1", "2":"v2", "3":"v3"}
-    if char.char in charConvert and charConvert[char.char] in verses:
-        currVerse = charConvert[char.char]
+    charConvert = {"c": "c1", "v":"c2", "b":"b1", "n":"b2", "1":"v1", "2":"v2", "3":"v3", "p":"p1"}
+    if char in charConvert and charConvert[char] in verses:
+        currVerse = charConvert[char]
         currSlide = 0
         orderMode = False
         setSlide()

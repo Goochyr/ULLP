@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
 import tkinter as tk
-from tkinter import Frame, Text, Label, Listbox, Button, TOP, LEFT, RIGHT, BOTTOM, X, Y, BOTH, N, S, E, W
+from tkinter import Frame, Text, Label, Listbox, Button, TOP, LEFT, RIGHT, BOTTOM, X, Y, BOTH, N, S, E, W, ttk
 import modules.screenControl as sC
 import modules.displaySong as dS
 import modules.keypressHandlers as kH
 import modules.setlistHandler as sH
 import modules.bibleHandler as bH
+import modules.commandHandler as cH
 import os
 
 mode = "live"
+commandMode = False
 
 sC.init()
 sC.getThemeData()
@@ -65,6 +67,14 @@ blankedLabel = Label(detailFrame, text="Blanked:")
 blankedLabel.grid(row=6, column=0)
 blankedLabel1 = Label(detailFrame)
 blankedLabel1.grid(row=6, column=1)
+bible = tk.StringVar(UI)
+bible.set("KJV")
+bibleLabel = Label(detailFrame, text="Bible:")
+bibleLabel.grid(row=7, column=0)
+bibleDropdown = ttk.Combobox(detailFrame)
+bibleDropdown['values']=('NIV','KJV')
+bibleDropdown.current(1)
+bibleDropdown.grid(row=7, column=1)
 previewLabel = Label(mainFrame, text="Preview:")
 previewLabel.grid(row=2, column=3, sticky=S)
 #previewFrame = Frame(mainFrame, bg=theme['bgColour'], width=rootWidth*0.2, height=rootHeight*0.2)
@@ -90,46 +100,63 @@ mainFrame.rowconfigure(1, weight=1)
 mainFrame.rowconfigure(2, weight=1)
 
 def keyPressSend(key):
-    global mode
+    global mode, commandMode
     if key.keysym == "Escape":
         mode = "normal"
+        commandMode = False
         mainFrame.focus_set()
         resetHighlight()
         searchBar.delete("1.0", tk.END)
-    elif mode == "live":
-        kH.live(key)
-        updateLists()
-        highlightSong()
-    elif mode == "bible":
-        kH.bible(key)
-        searchbarUpdate()
-        bibleUpdate()
-        highlightBible()
-    elif mode == "setlist":
-        kH.setlist(key)
-        setlistUpdate()
-        searchbarUpdate()
-    elif mode == "normal":
-        a = kH.normal(key)
-        if a == "live":
-            mode = "live"
+    if not commandMode:
+        if mode == "live":
+            kH.live(key.keysym)
             updateLists()
             highlightSong()
-        elif a == "setlist":
-            mode = "setlist"
-        elif a == "bible":
-            mode = "bible"
+        elif mode == "bible":
+            kH.bible(key.keysym)
             bibleUpdate()
             highlightBible()
+            if key.keysym == "slash":
+                searchBar.delete(1.0, tk.END)
+                searchBar.insert(1.0,"bibleRef  "+bibleDropdown.get())
+                searchBar.mark_set(tk.INSERT, '1.9')
+                searchBar.focus_set()
+        elif mode == "setlist":
+            kH.setlist(key.keysym)
+            setlistUpdate()
+            searchbarUpdate()
+        elif mode == "normal":
+            a = kH.normal(key.keysym)
+            if a == "live":
+                mode = "live"
+                updateLists()
+                highlightSong()
+            elif a == "setlist":
+                mode = "setlist"
+            elif a == "bible":
+                mode = "bible"
+                bibleUpdate()
+                highlightBible()
+                cH.doCommand('getBibles')
+                bibleDropdown['values'] = bH.bibles
     if key.keysym == "slash":
         searchBar.focus_set()
+        commandMode = True
     elif key.keysym == "Return":
+        commandMode = False
         mainFrame.focus_set()
+        barText = searchBar.get("1.0", tk.END)
+        if barText.strip('\n').strip('\t') != "":
+            cH.doCommand(barText)
+            if mode == "bible":
+                bibleUpdate()
+                highlightBible()
         searchBar.delete("1.0", tk.END)
+
     updateInfo()
 
 def updateInfo():
-    global mode
+    global mode, commandMode
     setlistLabel1.config(text=sH.setlistName)
     if len(sH.songlist) > 0:
         currSongLabel1.config(text=sH.songlist[sH.currSong])
@@ -148,6 +175,8 @@ def updateInfo():
     elif mode == "setlist":
         setlistUpdate()
         previewIndicator.config(text='Setlist Mode', background='cyan')
+    if commandMode:
+        previewIndicator.config(text='Command Mode')
 
 def updateLists():
     slideList.delete(0, tk.END)
@@ -196,11 +225,17 @@ def highlightSong():
 
 def highlightBible():
     allVerses = slideList.get(0, tk.END)
+    allPassages = setList.get(0, tk.END)
     for a in range(len(allVerses)):
         if a == bH.currSlide:
             slideList.itemconfig(a, bg='brown')
         else:
             slideList.itemconfig(a, bg='white')
+    for a in range(len(allPassages)):
+        if allPassages[a] == bH.currPassage:
+            setList.itemconfig(a, bg='brown')
+        else:
+            setList.itemconfig(a, bg='white')
 
 def setlistUpdate():
     updateLists()
