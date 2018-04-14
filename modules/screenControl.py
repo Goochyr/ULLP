@@ -3,13 +3,15 @@ import tkinter as tk
 import os
 import yaml
 from PIL import ImageTk, Image
-
+from screeninfo import get_monitors
 
 def init():
-    global root, rootWidth, rootHeight, mainText, textFrame, logoBox, leftLogo, rightLogo, theme, order, textStore, blanked 
-    root = tk.Tk()
-    rootHeight = root.winfo_screenheight()
-    rootWidth = root.winfo_screenwidth()
+    global root, rootWidth, rootHeight, mainText, textFrame, logoBox, leftLogo, rightLogo, theme, order, textStore, blanked, monitors
+    monitors = get_monitors()
+    root = tk.Toplevel()
+    root.geometry(str(monitors[1].width)+"x"+str( monitors[1].height)+"+"+str(monitors[0].width)+"+"+"0")
+    rootHeight = monitors[1].height
+    rootWidth = monitors[1].width
     textFrame = tk.Frame(root, width=rootWidth, height=rootHeight*0.75, background='black')
     mainText = tk.Text(textFrame)
     logoBox = tk.Frame(root, width=rootWidth, height=rootHeight*0.25, background='black')

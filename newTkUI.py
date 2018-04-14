@@ -12,16 +12,20 @@ import os
 mode = "live"
 commandMode = False
 
+UI = tk.Tk()
+UI.winfo_toplevel().title("ULLP")
 sC.init()
 sC.getThemeData()
-UI = tk.Toplevel()
-UI.winfo_toplevel().title("ULLP")
+UI.geometry(str(sC.monitors[0].width)+'x'+str(sC.monitors[0].height)+'+0+0')
 
-toolbar = Frame(UI, width=sC.rootWidth, height=20)
+rootWidth = sC.monitors[0].width
+rootHeight = sC.monitors[0].height
+
+toolbar = Frame(UI, width=rootWidth, height=20)
 toolbar.pack(side=TOP, fill=X, padx=5, pady=3)
 versionLabel = Label(toolbar, text="Version: a0.0")
 versionLabel.pack(side=LEFT)
-mainFrame = Frame(UI, width=sC.rootWidth, height=sC.rootHeight-20)
+mainFrame = Frame(UI, width=rootWidth, height=rootHeight-20)
 mainFrame.pack(side=TOP, fill=BOTH, expand=True, padx=10, pady=10)
 Label1 = Label(mainFrame, text="Library:")
 Label1.grid(row=0, column=0)
@@ -286,6 +290,7 @@ dS.setSlide()
 UI.bind("<Key>", keyPressSend)
 sH.refreshLib()
 updateInfo()
+mainFrame.focus_set()
 updateLists()
 highlightSong()
 sC.mainLoop()
