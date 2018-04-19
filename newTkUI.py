@@ -8,6 +8,7 @@ import modules.setlistHandler as sH
 import modules.bibleHandler as bH
 import modules.commandHandler as cH
 import os
+from PIL import ImageTk, Image
 
 mode = "live"
 commandMode = False
@@ -81,17 +82,8 @@ bibleDropdown.current(1)
 bibleDropdown.grid(row=7, column=1)
 previewLabel = Label(mainFrame, text="Preview:")
 previewLabel.grid(row=2, column=3, sticky=S)
-#previewFrame = Frame(mainFrame, bg=theme['bgColour'], width=rootWidth*0.2, height=rootHeight*0.2)
-#previewFrame.grid(row=3, column=3)
-#previewFrame.pack_propagate(0)
-#previewTextFrame = Frame(previewFrame, bg=theme['bgColour'], width=rootWidth*0.1, height=rootHeight*0.15)
-#previewTextFrame.pack(side=TOP, fill=X, expand=False)
-#previewTextFrame.pack_propagate(0)
-#previewText = Text(previewTextFrame, background=theme['bgColour'], borderwidth=0, highlightthickness=0)
-#previewText.pack(side=TOP, expand=False, fill=X)
-#previewLogoBox = Frame(previewFrame, width=rootWidth*0.2, height=rootHeight*0.05, background=theme['bgColour'])
-#previewleftLogo = Label(previewLogoBox, border=0, background=theme['bgColour'])
-#previewrightLogo = Label(previewLogoBox, border=0, background=theme['bgColour'])
+previewFrame = Label(mainFrame)
+previewFrame.grid(row=3, column=3)
 searchBar = Text(mainFrame, height=1, width=30)
 searchBar.grid(row=4, column=0, padx=5, columnspan=3, sticky=W+E)
 previewIndicator = Label(mainFrame, width=20, height=1, text='Live Mode', background='green')
@@ -181,6 +173,12 @@ def updateInfo():
         previewIndicator.config(text='Setlist Mode', background='cyan')
     if commandMode:
         previewIndicator.config(text='Command Mode')
+    img_prev = sC.img_pil.copy()
+    w, h = img_prev.size
+    img_prev = img_prev.resize((int(w*0.2), int(h*0.2)), Image.ANTIALIAS)
+    img_prev0 = ImageTk.PhotoImage(img_prev)
+    previewFrame.config(image=img_prev0)
+    previewFrame.image=img_prev0
 
 def updateLists():
     slideList.delete(0, tk.END)

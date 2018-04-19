@@ -8,24 +8,26 @@ import fontconfig as fc
 import numpy as np
 
 def init():
-    global root, rootWidth, rootHeight, mainText, textFrame, logoBox, leftLogo, rightLogo, theme, order, textStore, blanked, monitors, width, height, topGap, pad, fullWindow
+    global root, rootWidth, rootHeight, mainText, textFrame, logoBox, leftLogo, rightLogo, theme, order, textStore, blanked, monitors
     monitors = get_monitors()
     root = tk.Toplevel()
     root.geometry(str(monitors[1].width)+"x"+str( monitors[1].height)+"+"+str(monitors[0].width)+"+"+"0")
     rootHeight = monitors[1].height
     rootWidth = monitors[1].width
     height = rootHeight
-    width = rootWidth
-    fullWindow = tk.Label(root)
-    #fullWindow.pack(fill=tk.BOTH)
-    fullWindow.pack()
+    width = rotWidth
+    textFrame = tk.Frame(root, width=rootWidth, height=rootHeight*0.75, background='black')
+    mainText = tk.Text(textFrame)
+    logoBox = tk.Frame(root, width=rootWidth, height=rootHeight*0.25, background='black')
+    logoBox.pack_propagate(0)
+    leftLogo = tk.Label(logoBox, border=0, background='black')
+    rightLogo = tk.Label(logoBox, border=0, background='black')
+    textFrame.pack(expand=True, fill='both', side=tk.TOP)
     textStore = ""
     blanked = False
-    topGap = 30
-    pad = 10
 
 def getThemeData():
-    global mainText, leftLogo, rightLogo, themeName, img_pil, baseImg, font, width, height
+    global mainText, leftLogo, rightLogo, themeName, img_pil, baseImg
     with open(os.path.join(os.getcwd(),"config.yml"), 'r') as ymlfile:
         cfg = yaml.load(ymlfile)
     themeName = cfg['theme']
@@ -40,12 +42,17 @@ def getThemeData():
             fontpath = fonts[i].file
             break
     font = ImageFont.truetype(fontpath, theme['fontSize'])
+    mainText.config(background=theme['bgColour'], borderwidth=0, highlightthickness=0)
+    mainText.tag_configure('main', justify='center', background=theme['bgColour'], foreground=theme['fgColour'], font=(theme['font'], theme['fontSize']), spacing1=30, wrap='word')
     if theme['leftImg'] != 'none':
         leftImgPath = os.getcwd()+"/logos/"+theme['leftImg']+".png"
         with Image.open(leftImgPath) as leftImg0:
             [limageSizeWidth, limageSizeHeight] = leftImg0.size
             leftRatio = (rootHeight*0.25)/limageSizeHeight
             leftImg0 = leftImg0.resize((int(leftRatio*limageSizeWidth), int(leftRatio*limageSizeHeight)), Image.ANTIALIAS)
+            leftImg = ImageTk.PhotoImage(leftImg0)
+            leftLogo.config(image=leftImg)
+            leftLogo.image=leftImg
             img_pil.paste(leftImg0, (0,int(height*0.75)), leftImg0)
             leftImg0.close()
 
@@ -53,44 +60,44 @@ def getThemeData():
         rightImgPath = os.getcwd()+"/logos/"+theme['rightImg']+".png"
         rightImg0 = Image.open(rightImgPath)
         [rimageSizeWidth, rimageSizeHeight] = rightImg0.size
-        rightRatio = (height*0.25)/rimageSizeHeight
+        rightRatio = (rootHeight*0.25)/rimageSizeHeight
         rightImg0 = rightImg0.resize((int(rightRatio*rimageSizeWidth), int(rightRatio*rimageSizeHeight)), Image.ANTIALIAS)
-        w, h = rightImg0.size
-        img_pil.paste(rightImg0, (int(width-w),int(height*0.75)))
+        rightImg = ImageTk.PhotoImage(rightImg0)
+        rightLogo.config(image=rightImg)
+        rightLogo.image=rightImg
+        img_pil.paste(rightImg0, (int(width-rimageSizeWidth*rightRatio),int(height*0.75)))
+    mainText.pack(expand=True, fill='both', pady=20)
+    logoBox.pack(expand=False, fill=tk.X, side=tk.BOTTOM)
+    leftLogo.pack(side=tk.LEFT, fill=tk.Y, expand=False)
+    rightLogo.pack(side=tk.RIGHT, fill=tk.Y, expand=False)
     baseImg = img_pil
 
 def updateText(text):
-    global textStore, blanked, img_pil, baseImg, topGap, pad, font, fullWindow
-    lines = []
+    global mainText, textStore, blanked, img_pil, baseImg
+    mainText.delete('1.0', tk.END)
     if not blanked:
+        mainText.insert(tk.END, text, 'main')
         lines = text.split("\n")
-        img_pil = baseImg.copy()
+        img_pil = baseImg
         draw = ImageDraw.Draw(img_pil)
         cHeight = topGap
         for line in lines:
             w,h = font.getsize(line)
             draw.text(((width-w)/2,cHeight),line, font=font)
             cHeight += h+pad
-        fullImg0 = ImageTk.PhotoImage(img_pil)
-        fullWindow.config(image=fullImg0)
-        fullWindow.image=fullImg0
     textStore = text
-    #baseImg.show()
 
 def blankText():
-    global img_pil, baseImg
-    img_pil = baseImg.copy()
-    fullImg0 = ImageTk.PhotoImage(img_pil)
-    fullWindow.config(image=fullImg0)
-    fullWindow.image=fullImg0
-
+    global mainText, img_pil, baseImg
+    mainText.delete('1.0', tk.END)
+    img_pil = baseImg
 
 def mainLoop():
     global root
     root.mainloop()
 
 def unBlank():
-    global textStore
+    global mainText, textStore
     updateText(textStore)
 
 def toggleBlanked():
@@ -101,3 +108,4 @@ def toggleBlanked():
     else:
         blanked = True
         blankText()
+
