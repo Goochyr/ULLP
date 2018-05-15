@@ -32,6 +32,10 @@ def live(key):
         dS.nextSong()
     elif key == "t":
         sC.toggleBlanked()
+    elif key == "y":
+        sC.fullImg()
+    elif key == "u":
+        sC.unFullImg()
     elif key =="g":
         dS.goLive()
     elif len(key) == 1:

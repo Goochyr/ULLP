@@ -8,14 +8,12 @@ import fontconfig as fc
 import numpy as np
 
 def init():
-    global root, rootWidth, rootHeight, mainText, textFrame, logoBox, leftLogo, rightLogo, theme, order, textStore, blanked, monitors, width, height, topGap, pad, fullWindow
+    global root, textStore, blanked, monitors, width, height, topGap, pad, fullWindow
     monitors = get_monitors()
     root = tk.Toplevel()
     root.geometry(str(monitors[1].width)+"x"+str( monitors[1].height)+"+"+str(monitors[0].width)+"+"+"0")
-    rootHeight = monitors[1].height
-    rootWidth = monitors[1].width
-    height = rootHeight
-    width = rootWidth
+    height = monitors[1].height
+    width = monitors[1].width
     fullWindow = tk.Label(root)
     #fullWindow.pack(fill=tk.BOTH)
     fullWindow.pack()
@@ -25,7 +23,7 @@ def init():
     pad = 10
 
 def getThemeData():
-    global mainText, leftLogo, rightLogo, themeName, img_pil, baseImg, font, width, height
+    global themeName, img_pil, baseImg, font, width, height, img_full, topGap
     with open(os.path.join(os.getcwd(),"config.yml"), 'r') as ymlfile:
         cfg = yaml.load(ymlfile)
     themeName = cfg['theme']
@@ -42,19 +40,23 @@ def getThemeData():
     font = ImageFont.truetype(fontpath, theme['fontSize'])
     if theme['leftImg'] != 'none':
         leftImgPath = os.getcwd()+"/logos/"+theme['leftImg']+".png"
-        with Image.open(leftImgPath) as leftImg0:
-            [limageSizeWidth, limageSizeHeight] = leftImg0.size
-            leftRatio = (rootHeight*0.25)/limageSizeHeight
-            leftImg0 = leftImg0.resize((int(leftRatio*limageSizeWidth), int(leftRatio*limageSizeHeight)), Image.ANTIALIAS)
-            img_pil.paste(leftImg0, (0,int(height*0.75)), leftImg0)
-            leftImg0.close()
+        leftImg0 = Image.open(leftImgPath) 
+        [limageSizeWidth, limageSizeHeight] = leftImg0.size
+        leftRatio = (height*0.25)/limageSizeHeight
+        leftImg0 = leftImg0.resize((int(leftRatio*limageSizeWidth), int(leftRatio*limageSizeHeight)), Image.ANTIALIAS)
+        img_pil.paste(leftImg0, (0,int(height*0.75)), leftImg0)
+        img_full = img_pil.copy()
 
     if theme['rightImg'] != 'none':
         rightImgPath = os.getcwd()+"/logos/"+theme['rightImg']+".png"
         rightImg0 = Image.open(rightImgPath)
-        [rimageSizeWidth, rimageSizeHeight] = rightImg0.size
-        rightRatio = (height*0.25)/rimageSizeHeight
-        rightImg0 = rightImg0.resize((int(rightRatio*rimageSizeWidth), int(rightRatio*rimageSizeHeight)), Image.ANTIALIAS)
+        w, h = rightImg0.size
+        ratio = (height*0.75)/h
+        rightImg0 = rightImg0.resize((int(ratio*w), int(ratio*h)), Image.ANTIALIAS)
+        w, h = rightImg0.size
+        img_full.paste(rightImg0, (int((width-w)/2),topGap))
+        rightRatio = (height*0.25)/h
+        rightImg0 = rightImg0.resize((int(rightRatio*w), int(rightRatio*h)), Image.ANTIALIAS)
         w, h = rightImg0.size
         img_pil.paste(rightImg0, (int(width-w),int(height*0.75)))
     baseImg = img_pil
@@ -78,12 +80,25 @@ def updateText(text):
     #baseImg.show()
 
 def blankText():
-    global img_pil, baseImg
+    global img_pil, baseImg, fullWindow
     img_pil = baseImg.copy()
     fullImg0 = ImageTk.PhotoImage(img_pil)
     fullWindow.config(image=fullImg0)
     fullWindow.image=fullImg0
 
+def fullImg():
+    global img_pil, img_full
+    img_pil = img_full.copy()
+    fullImg0 = ImageTk.PhotoImage(img_pil)
+    fullWindow.config(image=fullImg0)
+    fullWindow.image=fullImg0
+
+def unFullImg():
+    global blanked
+    if blanked:
+        blankText()
+    else:
+        unBlank()
 
 def mainLoop():
     global root
