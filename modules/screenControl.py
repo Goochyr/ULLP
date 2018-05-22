@@ -61,11 +61,34 @@ def getThemeData():
         img_pil.paste(rightImg0, (int(width-w),int(height*0.75)))
     baseImg = img_pil
 
+def wrapText(text):
+    global font, width, pad
+    maxWidth = width-pad
+    lines = []
+    for line in text:
+        if font.getsize(line)[0] <= maxWidth:
+            lines.append(line)
+        else:
+            words = line.split(' ')
+            i=0
+            while i<len(words):
+                newLine = ''
+                while i<len(words) and font.getsize(newLine+words[i])[0] <= maxWidth:
+                    newLine += words[i] + " "
+                    i += 1
+                if not newLine:
+                    newLine = words[i]
+                    i += 1
+                lines.append(newLine)
+    return lines
+
+
 def updateText(text):
     global textStore, blanked, img_pil, baseImg, topGap, pad, font, fullWindow
     lines = []
     if not blanked:
         lines = text.split("\n")
+        lines = wrapText(lines)
         img_pil = baseImg.copy()
         draw = ImageDraw.Draw(img_pil)
         cHeight = topGap
