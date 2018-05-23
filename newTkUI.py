@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 import tkinter as tk
 from tkinter import Frame, Text, Label, Listbox, Button, TOP, LEFT, RIGHT, BOTTOM, X, Y, BOTH, N, S, E, W, ttk
-import modules.screenControl as sC
-import modules.displaySong as dS
-import modules.keypressHandlers as kH
-import modules.setlistHandler as sH
-import modules.bibleHandler as bH
-import modules.commandHandler as cH
+import modules.core.screenControl as sC
+import modules.core.displaySong as dS
+import modules.core.keypressHandlers as kH
+import modules.core.setlistHandler as sH
+import modules.core.bibleHandler as bH
+import modules.core.commandHandler as cH
 import os
 from PIL import ImageTk, Image
 

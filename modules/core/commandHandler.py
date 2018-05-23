@@ -1,7 +1,7 @@
-import modules.displaySong as dS
-import modules.setlistHandler as sH
-import modules.bibleHandler as bH
-import modules.screenControl as sC
+import modules.core.displaySong as dS
+import modules.core.setlistHandler as sH
+import modules.core.bibleHandler as bH
+import modules.core.screenControl as sC
 
 def doCommand(command):
     sendCommand=command.split()

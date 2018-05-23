@@ -49,7 +49,7 @@ if __name__ == "__main__":
     getPassage(book, chapter, verse1, verse2)
     print(passages[instr].verses)
 else:
-    import modules.screenControl as sC
+    import modules.core.screenControl as sC
     path = os.getcwd()+"/bibles"
     kjv = ElementTree.parse(path+"/KJV.xml")
     tl = kjv.getroot()

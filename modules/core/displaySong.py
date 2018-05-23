@@ -2,8 +2,8 @@
 import yaml
 import json
 import os
-from modules.screenControl import updateText, blankText, toggleBlanked
-import modules.setlistHandler as sH
+from modules.core.screenControl import updateText, blankText, toggleBlanked
+import modules.core.setlistHandler as sH
 
 def init():
     global verses, currVerseNum, currVerse, currSlide, currSlideNum, order, orderMode, currSong, song, songlist, setlistName, blanked
