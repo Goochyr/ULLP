@@ -14,7 +14,6 @@ class Passage:
     def addVerse(self,versein):
         self.verses.append(versein)
 
-
 def getPassage(ibook, ichapter, v1, v2):
     global passages, reference
     passages[reference] = Passage(reference, 'niv')
@@ -35,6 +34,7 @@ def translateReference(input):
     chapter = input.split(" ")[1].split(":")[0]
     verse1 = input.split(" ")[1].split(":")[1].split("-")[0]
     verse2 = input.split(" ")[1].split(":")[1].split("-")[1]
+
 
 def getReference():
     global reference
@@ -82,6 +82,15 @@ def createPassage():
     getPassage(book, chapter, verse1, verse2)
     currPassage = passageLookup[currPassageNum]
     currSlide = 0
+
+def bibleRef(ref, trans):
+    global reference, translation
+    if len(ref.split(" ")) == 2:
+        reference = ref
+    elif len(ref.split(" ")) == 3:
+        reference = ref.split(" ")[0]+ref.split(" ")[1]+" "+ref.split(" ")[2]
+    setTranslation(trans)
+    createPassage()
 
 def goLive():
     setSlide()

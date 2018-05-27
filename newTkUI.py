@@ -17,6 +17,7 @@ UI = tk.Tk()
 UI.winfo_toplevel().title("ULLP")
 imgicon = ImageTk.PhotoImage(file=os.path.join(os.getcwd(),'icon.png'))
 UI.tk.call('wm', 'iconphoto', UI._w, imgicon)
+UI.tk_setPalette(background = "snow")
 sC.init()
 sC.getThemeData()
 UI.geometry(str(sC.monitors[0].width)+'x'+str(sC.monitors[0].height)+'+0+0')
@@ -92,7 +93,8 @@ previewLabel = Label(mainFrame, text="Preview:")
 previewLabel.grid(row=2, column=3, sticky=S)
 previewFrame = Label(mainFrame)
 previewFrame.grid(row=3, column=3)
-searchBar = Text(mainFrame, height=1, width=30)
+commandString = tk.StringVar()
+searchBar = tk.Entry(mainFrame, textvariable=commandString)
 searchBar.grid(row=4, column=0, padx=5, columnspan=3, sticky=W+E)
 previewIndicator = Label(mainFrame, width=20, height=1, text='Live Mode', background='green')
 previewIndicator.grid(row=4, column=3)
@@ -110,7 +112,7 @@ def keyPressSend(key):
         commandMode = False
         mainFrame.focus_set()
         resetHighlight()
-        searchBar.delete("1.0", tk.END)
+        searchBar.delete(0, tk.END)
     if not commandMode:
         if mode == "live":
             kH.live(key.keysym)
@@ -121,9 +123,9 @@ def keyPressSend(key):
             bibleUpdate()
             highlightBible()
             if key.keysym == "slash":
-                searchBar.delete(1.0, tk.END)
-                searchBar.insert(1.0,"bibleRef  "+bibleDropdown.get())
-                searchBar.mark_set(tk.INSERT, '1.9')
+                searchBar.delete(0, tk.END)
+                searchBar.insert(0,"bibleRef \"\" "+bibleDropdown.get())
+                searchBar.icursor(10)
                 searchBar.focus_set()
         elif mode == "setlist":
             kH.setlist(key.keysym)
@@ -149,13 +151,13 @@ def keyPressSend(key):
     elif key.keysym == "Return":
         commandMode = False
         mainFrame.focus_set()
-        barText = searchBar.get("1.0", tk.END)
+        barText = commandString.get()
         if barText.strip('\n').strip('\t') != "":
             cH.doCommand(barText)
             if mode == "bible":
                 bibleUpdate()
                 highlightBible()
-        searchBar.delete("1.0", tk.END)
+        searchBar.delete(0, tk.END)
 
     updateInfo()
 
@@ -299,5 +301,7 @@ updateInfo()
 mainFrame.focus_set()
 updateLists()
 highlightSong()
+cH.init()
+cH.buildCommandTable()
 sC.mainLoop()
 UI.mainloop()

@@ -12,6 +12,7 @@ def init():
     monitors = get_monitors()
     root = tk.Toplevel()
     root.geometry(str(monitors[1].width)+"x"+str( monitors[1].height)+"+"+str(monitors[0].width)+"+"+"0")
+    root.overrideredirect(1)
     height = monitors[1].height
     width = monitors[1].width
     fullWindow = tk.Label(root)
