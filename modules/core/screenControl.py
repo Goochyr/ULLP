@@ -6,6 +6,7 @@ from PIL import ImageTk, Image, ImageFont, ImageDraw
 from screeninfo import get_monitors
 import fontconfig as fc
 import numpy as np
+import modules.core.themeHandler as tH
 
 def init():
     global root, textStore, blanked, monitors, width, height, topGap, pad, fullWindow

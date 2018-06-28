@@ -14,6 +14,10 @@ def fromConfig():
     setTheme()
 
 def setTheme():
-    global themeName
+    global themeName, theme
     with open(os.getcwd()+"/themes/"+themeName+".yml") as ymlfile1:
         theme = yaml.load(ymlfile1)
+
+def init():
+    getThemeList()
+    fromConfig()

@@ -13,6 +13,7 @@ from PIL import ImageTk, Image
 mode = "live"
 commandMode = False
 
+version = open('version').read()[:-1]
 UI = tk.Tk()
 UI.winfo_toplevel().title("ULLP")
 imgicon = ImageTk.PhotoImage(file=os.path.join(os.getcwd(),'icon.png'))
@@ -25,9 +26,29 @@ UI.geometry(str(sC.monitors[0].width)+'x'+str(sC.monitors[0].height)+'+0+0')
 rootWidth = sC.monitors[0].width
 rootHeight = sC.monitors[0].height
 
+menubar = tk.Menu(UI)
+importMenu = tk.Menu(menubar, tearoff=0)
+importMenu.add_command(label="From ProPresenter")
+importMenu.add_command(label="From SongPro")
+menubar.add_cascade(label="Import", menu=importMenu)
+setlistMenu = tk.Menu(menubar, tearoff = 0)
+setlistMenu.add_command(label = "Open Setlist")
+setlistMenu.add_command(label = "Save Setlist")
+menubar.add_cascade(label="Setlist", menu=setlistMenu)
+bibleMenu = tk.Menu(menubar, tearoff = 0)
+bibleMenu.add_command(label = "Update Bibles")
+bibleMenu.add_command(label = "Add Passage")
+menubar.add_cascade(label="Bible", menu=bibleMenu)
+themeMenu = tk.Menu(menubar, tearoff = 0)
+themeMenu.add_command(label = "Get Themes")
+themeMenu.add_command(label = "Set Theme")
+menubar.add_cascade(label="Theme", menu=themeMenu)
+menubar.add_command(label="Quit", command = UI.quit)
+UI.config(menu=menubar)
+
 toolbar = Frame(UI, width=rootWidth, height=20)
 toolbar.pack(side=TOP, fill=X, padx=5, pady=3)
-versionLabel = Label(toolbar, text="Version: a0.0")
+versionLabel = Label(toolbar, text="Version: "+version)
 versionLabel.pack(side=LEFT)
 mainFrame = Frame(UI, width=rootWidth, height=rootHeight-20)
 mainFrame.pack(side=TOP, fill=BOTH, expand=True, padx=10, pady=10)
@@ -86,8 +107,8 @@ bible.set("KJV")
 bibleLabel = Label(detailFrame, text="Bible:")
 bibleLabel.grid(row=7, column=0)
 bibleDropdown = ttk.Combobox(detailFrame)
-bibleDropdown['values']=('NIV','KJV')
-bibleDropdown.current(1)
+bibleDropdown['values']=('KJV')
+bibleDropdown.current(0)
 bibleDropdown.grid(row=7, column=1)
 previewLabel = Label(mainFrame, text="Preview:")
 previewLabel.grid(row=2, column=3, sticky=S)
@@ -145,19 +166,20 @@ def keyPressSend(key):
                 highlightBible()
                 cH.doCommand('getBibles')
                 bibleDropdown['values'] = bH.bibles
-    if key.keysym == "slash":
+    if key.keysym == "slash" or key.keysym == "colon":
         searchBar.focus_set()
         commandMode = True
     elif key.keysym == "Return":
         commandMode = False
         mainFrame.focus_set()
         barText = commandString.get()
+        commandString.set("")
         if barText.strip('\n').strip('\t') != "":
-            cH.doCommand(barText)
+            barText = cH.doCommand(barText)
+            commandString.set(barText)
             if mode == "bible":
                 bibleUpdate()
                 highlightBible()
-        searchBar.delete(0, tk.END)
 
     updateInfo()
 
@@ -284,11 +306,11 @@ def resetHighlight():
 
 def searchbarUpdate():
     global mode
-    searchBar.delete('1.0', tk.END)
+    searchBar.delete(0, tk.END)
     if mode == "setlist": 
-        searchBar.insert('1.0',sH.searchString)
+        searchBar.insert(0,sH.searchString)
     elif mode == "bible":
-        searchBar.insert('1.0',bH.reference)
+        searchBar.insert(0,bH.reference)
 
 sH.init()
 sH.fromConfig()
